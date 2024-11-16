@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { useSelector } from '../../services/store';
+import { useSelector } from 'react-redux'; // Убедитесь, что импортируете из react-redux
 import { Navigate } from 'react-router';
 import { Login } from '@pages';
 import {
@@ -12,25 +12,19 @@ type ProtectedRouteProps = {
   children: React.ReactElement;
 };
 
-export const ProtectedRoute = ({
-  children,
-  onlyUnAuth = false
-}: ProtectedRouteProps) => {
-  const isAuthChecked = useSelector(isAuthCheckedSelector);
-  const user = useSelector(getUser);
+export default function ProtectedRoute({ children, onlyUnAuth = false}: ProtectedRouteProps) {
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+
   const location = useLocation();
+  const from = location.state?.from || '/';
 
-  if (!isAuthChecked) {
-    return <Login />;
+  if (onlyUnAuth && isLoggedIn) {
+    return <Navigate to={from} />;
   }
 
-  if (!onlyUnAuth && !user) {
-    return <Navigate to='/login' state={{ from: location }} />;
+  if (!onlyUnAuth && !isLoggedIn) {
+    return <Navigate to="/login" state={{ from: location }} />;
   }
 
-  if (onlyUnAuth && user) {
-    return <Navigate to='/' />;
-  }
-
-  return children ? children : <Outlet />;
-};
+  return children;
+}
