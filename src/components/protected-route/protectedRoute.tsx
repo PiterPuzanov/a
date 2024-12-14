@@ -1,6 +1,7 @@
-import { useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { Navigate } from 'react-router';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useSelector } from '../../services/store';
+import { isAuthCheckedSelector } from '../../services/slices/userSlice';
+import { Preloader } from '@ui';
 
 type ProtectedRouteProps = {
   onlyUnAuth?: boolean;
@@ -11,25 +12,16 @@ export default function ProtectedRoute({
   children,
   onlyUnAuth = false
 }: ProtectedRouteProps) {
-  const { isLoggedIn, isLoading } = useSelector((state: any) => ({
-    isLoggedIn: state.user.isLoggedIn,
-    isLoading: state.user.isLoading
-  }));
-
+  const isAuthChecked = useSelector(isAuthCheckedSelector);
   const location = useLocation();
-  const from = location.state?.from || '/';
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (!onlyUnAuth && !isAuthChecked) {
+    return <Navigate replace to='/login' state={{ from: location }} />;
   }
 
-  if (onlyUnAuth && isLoggedIn) {
-    return <Navigate to={from} />;
+  if (onlyUnAuth && isAuthChecked) {
+    const from = location.state?.from || { pathname: '/' };
+    return <Navigate replace to={from} />;
   }
-
-  if (!onlyUnAuth && !isLoggedIn) {
-    return <Navigate to='/login' state={{ from: location }} />;
-  }
-
   return children;
 }
