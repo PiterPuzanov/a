@@ -11,10 +11,17 @@ export default function ProtectedRoute({
   children,
   onlyUnAuth = false
 }: ProtectedRouteProps) {
-  const isLoggedIn = useSelector((state: any) => state.user.isLoggedIn);
+  const { isLoggedIn, isLoading } = useSelector((state: any) => ({
+    isLoggedIn: state.user.isLoggedIn,
+    isLoading: state.user.isLoading
+  }));
 
   const location = useLocation();
   const from = location.state?.from || '/';
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   if (onlyUnAuth && isLoggedIn) {
     return <Navigate to={from} />;
